@@ -589,6 +589,13 @@ elif [[ $(7z l -ba "$FILEPATH" | grep "super.img") ]]; then
 	echo "Super Image detected"
 	foundsupers=$(7z l -ba "${FILEPATH}" | gawk '{ print $NF }' | grep "super.img")
 	7z e -y "${FILEPATH}" $foundsupers dummypartition 2>/dev/null >> ${TMPDIR}/zip.log
+	splitsupers=$(ls | grep -oP "super.img.*[0-9]")
+	if [[ ! -z "${splitsupers}" ]]; then
+		printf "Split super detected ...\n"
+		printf "Creating super.img.raw ...\n"
+		"${SIMG2IMG}" ${splitsupers} super.img.raw 2>/dev/null
+		rm -rf -- ${splitsupers}
+	fi
 	superchunk=$(ls | grep chunk | grep super | sort)
 	if [[ $(echo "$superchunk" | grep "sparsechunk") ]]; then
 		"${SIMG2IMG}" $(echo "$superchunk" | tr '\n' ' ') super.img.raw 2>/dev/null
